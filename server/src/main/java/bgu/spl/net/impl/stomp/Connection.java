@@ -1,5 +1,6 @@
 package bgu.spl.net.impl.stomp;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import bgu.spl.net.srv.ConnectionHandler;
 
@@ -15,6 +16,7 @@ public class Connection<T> {
         this.handler = handler;
         this.username = username;
         this.password = password;
+        idToChannel = new ConcurrentHashMap<>();
     }
 
     public int getConnectionId() {

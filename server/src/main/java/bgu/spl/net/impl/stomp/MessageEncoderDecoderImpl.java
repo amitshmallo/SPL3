@@ -32,6 +32,7 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
 
     private Message popMessage() {
         String result = new String(bytes, 0, len, StandardCharsets.UTF_8);
+        System.out.println(result);
         len = 0;
         int lastLineIndex = 0;
         String[] lines = result.split("\n");
@@ -43,7 +44,7 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
         }
         StringBuilder body = new StringBuilder();
         for (int i = lastLineIndex + 1; i < lines.length; i++) {
-            body = body.append(lines[i]);
+            body = body.append(lines[i] + "\n");
         }
         message.setBody(body.toString());
         return message;
@@ -51,6 +52,7 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
 
     private byte[] messageToBytes(Message message) {
         String msg = message.toString() + "\u0000";
+        System.out.println(msg);
         return msg.getBytes();
     }
 

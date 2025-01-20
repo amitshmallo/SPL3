@@ -68,6 +68,10 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
 
     }
 
+    public MessagingProtocol<T> getProtocol() {
+        return protocol;
+    }
+
     public void close() {
         try {
             chan.close();

@@ -1,4 +1,6 @@
 package bgu.spl.net.impl.stomp;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import bgu.spl.net.api.StompMessagingProtocol;
 import bgu.spl.net.srv.Connections;
 
@@ -6,6 +8,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
     private boolean shouldTerminate;
     private ConnectionsImpl<Message> connections;
     private int connectionId;
+    private AtomicInteger msgId = new AtomicInteger(0);
 
     @Override
     public void start(int connectionId, Connections<Message> connections) {
@@ -40,7 +43,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         if (username == null || password == null) {
             return createError(msg, "Missing username or password header");
         }
-        if (connections.isLoggedIn(username)){
+        if (connections.isLoggedIn(username)) {
             return createError(msg, "User already logged in");
         }
         if (!connections.checkUserPass(username, password)) {
@@ -58,32 +61,40 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         //Process the SEND command
         String destination = msg.getHeader("destination");
         String body = msg.getBody();
+        int subId = connections.getSubId(connectionId, destination);
         if (destination == null || body == null) {
             return createError(msg, "Missing destination or body header");
         }
         if (!connections.isLoggedIn(connections.getUsername(connectionId))) {
             return createError(msg, "User not logged in");
         }
+        if(subId == -1){
+            return createError(msg, "User not subscribed to this destination");
+        }
         //Send the message to all subscribers of the destination
         Message toSend = new Message("MESSAGE");
         toSend.addHeader("destination", destination);
+        toSend.addHeader("subscription",subId+"");
+        toSend.addHeader("message-id", msgId.getAndIncrement()+"");
         toSend.setBody(body);
         connections.send(destination,toSend);
-        //Send a RECEIPT to the sender
-        Message response = new Message("RECEIPT");
-        response.addHeader("receipt-id", msg.getHeader("receipt"));
-        return response;
+        //no need to send a RECEIPT
+        return null;
     }
 
     public Message processSubscribe(Message msg) {
         //Process the SUBSCRIBE command
         String destination = msg.getHeader("destination");
         String id = msg.getHeader("id");
+        String username = connections.getUsername(connectionId);
         if (destination == null || id == null) {
             return createError(msg, "Missing destination or id header");
         }
-        if (!connections.isLoggedIn(connections.getUsername(connectionId))) {
+        if (username==null || !connections.isLoggedIn(username)) {
             return createError(msg, "User not logged in");
+        }
+        if(connections.isSubscribed(connectionId, destination)){
+            return createError(msg, "User already subscribed to this destination");
         }
         //Subscribe the user to the destination
         int subId = Integer.parseInt(id);
@@ -97,10 +108,11 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
     public Message processUnsubscribe(Message msg) {
         //Process the UNSUBSCRIBE command
         String id = msg.getHeader("id");
+        String username = connections.getUsername(connectionId);
         if (id == null) {
             return createError(msg, "Missing id header");
         }
-        if (!connections.isLoggedIn(connections.getUsername(connectionId))) {
+        if (username==null || !connections.isLoggedIn(username)) {
             return createError(msg, "User not logged in");
         }
         //Unsubscribe the user from the destination
@@ -114,7 +126,8 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
 
     public Message processDisconnect(Message msg) {
         //Process the DISCONNECT command
-        if (!connections.isLoggedIn(connections.getUsername(connectionId))) {
+        String username = connections.getUsername(connectionId);
+        if (username==null || !connections.isLoggedIn(username)) {
             return createError(msg, "User not logged in");
         }
         //Disconnect the user
@@ -132,6 +145,8 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         error.addHeader("message", "melformed frame");
         String body = "The message:\n-----\n" + msg.toString() + "\n-----\n" + description +"\n";
         error.setBody(body);
+        if(connections.getUsername(connectionId) != null) connections.disconnect(connectionId);
+        shouldTerminate = true;
         return error;
     }
 

@@ -8,7 +8,7 @@ public class StompServer {
         //int port = Integer.parseInt(args[0]);
         //String serverVersion = args[1];
         int port = 7777;
-        String serverVersion = "tpc";
+        String serverVersion = "reactor";
 
         if(serverVersion == "tpc"){
             System.out.println("Server version: tpc");
