@@ -1,12 +1,6 @@
 package bgu.spl.net.impl.stomp;
-
-import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.impl.echo.EchoProtocol;
-import bgu.spl.net.impl.echo.LineMessageEncoderDecoder;
 import bgu.spl.net.srv.Server;
-import main.java.bgu.spl.net.impl.stomp.MessageEncoderDecoderImpl;
-import main.java.bgu.spl.net.impl.stomp.StompMessagingProtocolImpl;
-import main.java.bgu.spl.net.impl.stomp.Message;
+
 
 public class StompServer {
 
@@ -21,7 +15,7 @@ public class StompServer {
             System.out.println("Server is running on port: " + port);
             Server.threadPerClient(
                 port, //port
-                () -> new StompMessagingProtocolImpl<String>(), //protocol factory
+                () -> new StompMessagingProtocolImpl(), //protocol factory
                 MessageEncoderDecoderImpl::new //message encoder decoder factory
             ).serve();
         }
@@ -31,7 +25,7 @@ public class StompServer {
             Server.reactor(
                 Runtime.getRuntime().availableProcessors(),
                 port, //port
-                () -> new StompMessagingProtocolImpl<String>(), //protocol factory
+                () -> new StompMessagingProtocolImpl(), //protocol factory
                 MessageEncoderDecoderImpl::new //message encoder decoder factory
              ).serve();
         }

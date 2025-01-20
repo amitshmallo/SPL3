@@ -1,17 +1,16 @@
-package main.java.bgu.spl.net.impl.stomp;
-
+package bgu.spl.net.impl.stomp;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
 
-public class MessageEncoderDecoderImpl<String> implements MessageEncoderDecoder<String> {
+public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message> {
 
     private byte[] bytes = new byte[1 << 10];
     private int len = 0;
 
     @Override
-    public String decodeNextByte(byte nextByte) {
+    public Message decodeNextByte(byte nextByte) {
         if (nextByte == '\u0000') {
             return popMessage();
         }
@@ -42,15 +41,15 @@ public class MessageEncoderDecoderImpl<String> implements MessageEncoderDecoder<
             message.addHeader(header[0], header[1]);
             lastLineIndex = i;
         }
-        StringBuilder body = "";
+        StringBuilder body = new StringBuilder();
         for (int i = lastLineIndex + 1; i < lines.length; i++) {
             body = body.append(lines[i]);
         }
-        message.setBody(body);
+        message.setBody(body.toString());
         return message;
     }
 
-    private Byte[] messageToBytes(Message message) {
+    private byte[] messageToBytes(Message message) {
         String msg = message.toString() + "\u0000";
         return msg.getBytes();
     }

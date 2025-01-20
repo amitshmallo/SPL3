@@ -49,6 +49,10 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
 
     }
 
+    public MessagingProtocol<T> getProtocol() {
+        return protocol;
+    }
+
     @Override
     public void close() throws IOException {
         connected = false;

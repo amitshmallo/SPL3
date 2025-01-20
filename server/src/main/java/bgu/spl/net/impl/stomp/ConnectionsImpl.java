@@ -1,4 +1,5 @@
-package main.java.bgu.spl.net.impl.stomp;
+package bgu.spl.net.impl.stomp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -6,14 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import bgu.spl.net.srv.ConnectionHandler;
 import bgu.spl.net.srv.Connections;
 
-public class ConnectionsImpl implements Connections<T>{
-    private Map<String, Connection> loggedInUsers;
+public class ConnectionsImpl<T> implements Connections<T>{
+    private Map<String, Connection<T>> loggedInUsers;
     private Map<Integer,ConnectionHandler<T>> idToHandler;
     private Map<String,List<Integer>> channels;
     private Map<Integer, String> idToUsername;
 
     public ConnectionsImpl(){
-        loggedInUsers = new ConcurrentHashMap<>();
+        loggedInUsers = new ConcurrentHashMap<String,Connection<T>>();
         channels = new ConcurrentHashMap<>();
         idToHandler = new ConcurrentHashMap<>();
     }
@@ -28,7 +29,7 @@ public class ConnectionsImpl implements Connections<T>{
             loggedInUsers.get(username).setHandler(idToHandler.get(id));
         }
         else{
-            Connection connection = new Connection(id, idToHandler.get(id), username, passcode);
+            Connection<T> connection = new Connection<>(id, idToHandler.get(id), username, passcode);
             loggedInUsers.put(username, connection);
         }
         idToUsername.put(id, username);
@@ -58,11 +59,12 @@ public class ConnectionsImpl implements Connections<T>{
     }
     
     public void disconnect(int id){
+        String username = idToUsername.get(id);
         idToHandler.remove(id);
         idToUsername.remove(id);
-        loggedInUsers.get(id).setId(-1);
-        loggedInUsers.get(id).setHandler(null);
-        loggedInUsers.get(id).clearChannels();
+        loggedInUsers.get(username).setId(-1);
+        loggedInUsers.get(username).setHandler(null);
+        loggedInUsers.get(username).clearChannels();
         for(String channel : channels.keySet()){
             channels.get(channel).remove(id);
         }
@@ -73,11 +75,17 @@ public class ConnectionsImpl implements Connections<T>{
             channels.put(destination, new ArrayList<>());
         }
         else channels.get(destination).add(connectionId);
-        loggedInUsers.get(connectionId).addChannel(SubId, destination);   
+        String username = idToUsername.get(connectionId);
+        loggedInUsers.get(username).addChannel(SubId, destination);   
     }
 
     public void unsubscribe(int subId, int connectionId){
-        String channel = loggedInUsers.get(connectionId).removeChannel(subId);
+        String username = idToUsername.get(connectionId);
+        String channel = loggedInUsers.get(username).removeChannel(subId);
         channels.get(channel).remove(connectionId);
+    }
+
+    public String getUsername(int connectionId){
+        return idToUsername.get(connectionId);
     }
 }

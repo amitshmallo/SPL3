@@ -1,5 +1,4 @@
-package main.java.bgu.spl.net.impl.stomp;
-
+package bgu.spl.net.impl.stomp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,11 +33,11 @@ public class Message {
     }
 
     public String toString(){
-        String msg = message.getType() + "\n";
-        for (String key : message.getHeaders().keySet()) {
-            msg += key + ":" + message.getHeader(key) + "\n";
+        String msg = type + "\n";
+        for (String key : headers.keySet()) {
+            msg += key + ":" + headers.get(key) + "\n";
         }
-        msg += "\n" + message.getBody() + "\n";
+        msg += "\n" + body + "\n";
         return msg;
     }
 }

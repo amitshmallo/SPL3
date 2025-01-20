@@ -1,18 +1,16 @@
-package main.java.bgu.spl.net.impl.stomp;
-import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
-
-import bgu.spl.net.api.MessagingProtocol;
+package bgu.spl.net.impl.stomp;
+import bgu.spl.net.api.StompMessagingProtocol;
 import bgu.spl.net.srv.Connections;
 
-public class StompMessagingProtocolImpl<String> implements StompMessagingProtocol<String> {
+public class StompMessagingProtocolImpl implements StompMessagingProtocol<Message> {
     private boolean shouldTerminate;
-    private ConnectionsImpl<String> connections;
+    private ConnectionsImpl<Message> connections;
     private int connectionId;
 
     @Override
-    public void start(int connectionId, ConnectionsImpl<String> connections) {
+    public void start(int connectionId, Connections<Message> connections) {
         this.connectionId = connectionId;
-        this.connections = connections;
+        this.connections = (ConnectionsImpl)connections;
         shouldTerminate = false;
     }
 
@@ -88,7 +86,8 @@ public class StompMessagingProtocolImpl<String> implements StompMessagingProtoco
             return createError(msg, "User not logged in");
         }
         //Subscribe the user to the destination
-        connections.subscribe(connectionId, destination, id);
+        int subId = Integer.parseInt(id);
+        connections.subscribe(connectionId, destination, subId);
         //Send a RECEIPT to the sender
         Message response = new Message("RECEIPT");
         response.addHeader("receipt-id", msg.getHeader("receipt"));
@@ -105,7 +104,8 @@ public class StompMessagingProtocolImpl<String> implements StompMessagingProtoco
             return createError(msg, "User not logged in");
         }
         //Unsubscribe the user from the destination
-        connections.unsubscribe(connectionId, id);
+        int subId = Integer.parseInt(id);
+        connections.unsubscribe(connectionId, subId);
         //Send a RECEIPT to the sender
         Message response = new Message("RECEIPT");
         response.addHeader("receipt-id", msg.getHeader("receipt"));

@@ -1,12 +1,13 @@
-package main.java.bgu.spl.net.impl.stomp;
-
+package bgu.spl.net.impl.stomp;
 import java.util.Map;
 
-public class Connection {
-    private final int connectionId;
-    private final ConnectionHandler<T> handler;
-    private final String username;
-    private final String password;
+import bgu.spl.net.srv.ConnectionHandler;
+
+public class Connection<T> {
+    private int connectionId;
+    private ConnectionHandler<T> handler;
+    private String username;
+    private String password;
     private Map<Integer, String> idToChannel;
 
     public Connection(int connectionId, ConnectionHandler<T> handler, String username, String password) {
@@ -36,8 +37,8 @@ public class Connection {
         idToChannel.put(subscriptionId, channel);
     }
 
-    public void removeChannel(int subscriptionId) {
-        idToChannel.remove(subscriptionId);
+    public String removeChannel(int subscriptionId) {
+        return idToChannel.remove(subscriptionId);
     }
 
     public boolean isSubscribed(int subscriptionId) {
