@@ -8,7 +8,15 @@
 #include <sstream>
 #include <cstring>
 
-#include "../include/keyboardInput.h"
+void split_str(const std::string &str, char delim, std::vector<std::string> &out) {
+    std::stringstream ss(str);
+    std::string s;
+    while (std::getline(ss, s, delim)) {
+        out.push_back(s);
+    }
+}
+
+
 
 using namespace std;
 using json = nlohmann::json;
