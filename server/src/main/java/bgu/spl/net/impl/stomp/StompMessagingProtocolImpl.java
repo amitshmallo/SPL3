@@ -36,7 +36,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         }
     }
 
-    public Message processConnect(Message msg) {
+    private Message processConnect(Message msg) {
         //Process the CONNECT command
         String username = msg.getHeader("login");
         String password = msg.getHeader("passcode");
@@ -57,7 +57,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         return response;
     }
 
-    public Message processSend(Message msg) {
+    private Message processSend(Message msg) {
         //Process the SEND command
         String destination = msg.getHeader("destination");
         String body = msg.getBody();
@@ -82,7 +82,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         return null;
     }
 
-    public Message processSubscribe(Message msg) {
+    private Message processSubscribe(Message msg) {
         //Process the SUBSCRIBE command
         String destination = msg.getHeader("destination");
         String id = msg.getHeader("id");
@@ -105,7 +105,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         return response;
     }
 
-    public Message processUnsubscribe(Message msg) {
+    private Message processUnsubscribe(Message msg) {
         //Process the UNSUBSCRIBE command
         String id = msg.getHeader("id");
         String username = connections.getUsername(connectionId);
@@ -124,7 +124,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         return response;
     }
 
-    public Message processDisconnect(Message msg) {
+    private Message processDisconnect(Message msg) {
         //Process the DISCONNECT command
         String username = connections.getUsername(connectionId);
         if (username==null || !connections.isLoggedIn(username)) {
@@ -139,7 +139,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<Messag
         return response;
     }
 
-    public Message createError(Message msg, String description) {
+    private Message createError(Message msg, String description) {
         Message error = new Message("ERROR");
         error.addHeader("receipt-id", msg.getHeader("receipt"));
         error.addHeader("message", "melformed frame");
